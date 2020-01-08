@@ -157,6 +157,8 @@ setInterval(()=>{
               insertOneCollection('kedatangan', data, (err, result)=>{
                 
               });
+            }else{
+              console.log('Data ada, no update required');
             }
           });
         });

@@ -421,6 +421,7 @@ class Absen extends React.Component{
             autoConnect:true
         });
         axios.get('http://192.168.100.97:3500/show-kedatangan').then((response)=>{
+          this.setGraphData({target:"produksi_non", telat:0, cepat:0, status_tampil:'reset'});
           response.data.forEach((item, i)=>{
             this.insertDataToGraph(item);
           })
@@ -874,7 +875,7 @@ class Absen extends React.Component{
                 <br/>
                 <Row>
                   <Col xl="6">
-                    <Card style>
+                    <Card>
                       <CardHeader>Produksi</CardHeader>
                       <CardBody>
                         <Row>
