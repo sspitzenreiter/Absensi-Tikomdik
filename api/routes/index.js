@@ -55,7 +55,10 @@ getCollection=(doc, where, callback)=>{
       console.log("Collection created!");
     });
     dbo.collection(doc).find(where).toArray((err, result)=>{
-      if(err) throw err;
+      if(err) {
+        console.log(err);
+        throw err;
+      }
       callback(result);
       db.close();
     });
@@ -104,7 +107,10 @@ getOneCollection=(doc, where, callback)=>{
 }
 
 router.get('/show-users', (req, res, next)=>{
-  getCollection('user', (result)=>{
+  getCollection('user', {}, (result)=>{
+    for(var a=0;a<result.length;a++){
+      delete result[a]._id;
+    }
     res.send(result);
   })
 })
@@ -143,26 +149,17 @@ setInterval(()=>{
         // insertManyCollection('kedatangan_dump', responder.data, (err, result)=>{
           
         // });
-        waterfall([
-          (callback)=>{
-            
-          }
-        ])
-        async.waterfall([
-          (callback)=>{
-            responder.data.forEach((data, i)=>{
-              data.tanggal = new Date(data.tanggal);
-              getOneCollection('kedatangan', data, (err, result)=>{
-                if(result.length<1){
-                  insertOneCollection('kedatangan', data, (err, result)=>{
-                    
-                  });
-                }
+        responder.data.forEach((data, i)=>{
+          data.tanggal = new Date(data.tanggal);
+          getOneCollection('kedatangan', data, (err, result)=>{
+            if(result.length<1){
+              console.log('Data Gak ada, Inserting');
+              insertOneCollection('kedatangan', data, (err, result)=>{
+                
               });
-            });
-          }
-        ])
-        
+            }
+          });
+        });
         // insertManyCollection('kedatangan', responder.data, (err, result)=>{
            
         // });
@@ -182,6 +179,7 @@ setInterval(()=>{
     });
   }
 }, 5000)
+
 router.get('/sync-data', (req, res, next)=>{
   axios.get('http://localhost/attend/PHP-soap-baru/tarik-data.php?ip=192.168.100.41&key=0').then((responder)=>{
     if(responder.data.length>0){
