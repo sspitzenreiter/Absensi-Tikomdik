@@ -175,10 +175,10 @@ setInterval(()=>{
     console.log(error);
   });
   if(new Date().getHours()==12){
-    axios.get("http://localhost/attend/PHP-soap-baru/clear-data.php?ip=192.168.100.41&key=0").then((clear_responden)=>{
+    // axios.get("http://localhost/attend/PHP-soap-baru/clear-data.php?ip=192.168.100.41&key=0").then((clear_responden)=>{
       
-        //res.send('Sukses');
-    });
+    //     //res.send('Sukses');
+    // });
   }
 }, 5000)
 
