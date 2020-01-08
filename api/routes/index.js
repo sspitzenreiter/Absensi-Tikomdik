@@ -143,7 +143,7 @@ router.get('/show-kedatangan', (req, res, next)=>{
   })
 })
 setInterval(()=>{
-  axios.get('http://localhost/attend/PHP-soap-baru/tarik-data.php?ip=192.168.100.41&key=0').then((responder)=>{
+  axios.get('http://localhost/Attend/tarik-data.php?ip=192.168.100.41&key=0').then((responder)=>{
     if(Array.isArray(responder.data)){
       if(responder.data.length>0){
         // insertManyCollection('kedatangan_dump', responder.data, (err, result)=>{
