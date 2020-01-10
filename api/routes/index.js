@@ -169,9 +169,6 @@ router.get('/show-kedatangan', (req, res, next)=>{
           send_data['status_pns'] = data_user.status_pns;
           console.log("Data user", send_data);
           //io.emit('absen', send_data);
-          if(i===result_kedatangan.length-1){
-            res.send(result_kedatangan);
-          }
         }else if(result.length<1){
           belum_datang.push({nama:send_data.name, pin:send_data.pin});
           //io.emit('absen', send_data); 
@@ -339,5 +336,36 @@ router.get('/get-data', (req, res, next)=>{
 router.get('/', function(req, res, next) {
   res.send('s');
 });
+
+router.get('/rekap-absen', (req, res, next)=>{
+  getKedatangan((err, result_kedatangan)=>{
+    result_kedatangan.forEach((data,i)=>{
+      var send_data = result_kedatangan[i];
+      var tanggal_absen = new Date(data.tanggal);
+      //console.log("bisa", send_data);
+      var waktu = send_data.jam.split(':');
+      var jam = parseInt(waktu[0])*60;
+      var menit = parseInt(waktu[1]);
+      getOneCollection('user', {"userid":send_data.pin}, (err, result)=>{
+        //console.log(err);
+        var data_user = result[0];
+        var param_jam = 450;
+       //console.log('Data before modified', send_data);
+        if(result.status_pns!=='undefined' && result.bagian!=='undefined'){
+          send_data['waktu'] = param_jam-(jam+menit);
+          send_data['nama'] = data_user.name;
+          send_data['jabatan'] = data_user.bagian;
+          send_data['status_pns'] = data_user.status_pns;
+          console.log("Data user", send_data);
+        }else{
+          delete result_kedatangan[i];
+        }
+        if(i===result_kedatangan.length-1){
+          res.send(result_kedatangan);
+        }
+      })
+    })
+  })
+})
 
 module.exports = router;
