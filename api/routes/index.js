@@ -361,7 +361,8 @@ router.get('/rekap-absen', (req, res, next)=>{
           delete result_kedatangan[i];
         }
         if(i===result_kedatangan.length-1){
-          res.send(result_kedatangan);
+          var data = {result:result_kedatangan};
+          res.send(data);
         }
       })
     })
