@@ -67,39 +67,70 @@ getCollection=(doc, where, callback)=>{
 
 getKedatangan=(callback)=>{
   MongoClient.connect(url, function(err, db){
-    if(err) throw err;
+    if(err) {
+      console.log(err);
+      throw err;
+    };
     var dbo = db.db("AbsenTikomdik");
     var tanggal_server = new Date();
     var hari = tanggal_server.getDate();
     var bulan = tanggal_server.getMonth()+1;
     var tahun = tanggal_server.getFullYear();
+    if(hari<10){
+      hari = "0"+hari;
+    }
+    if(bulan<10){
+      bulan = "0"+bulan;
+    }
+    console.log(hari+"-"+bulan+"-"+tahun);
+    var tanggal_cari = hari+"-"+bulan+"-"+tahun;
     dbo.collection('kedatangan').aggregate(
       [
         {$addFields:{
-          hari:{$dayOfMonth:"$tanggal"}, 
-          bulan:{$month:"$tanggal"}, 
-          tahun:{$year:"$tanggal"}
-        }}, 
-        {$match:{hari:hari, bulan:bulan, tahun:tahun}}
+          tanggal_real:{
+            $dateToString:{
+              format:"%d-%m-%Y",
+              date:'$tanggal',
+              timezone:'Asia/Bangkok'
+            }
+          },
+          jam:{
+            $dateToString:{
+              format:'%H:%M:%S',
+              date:'$tanggal',
+              timezone:'Asia/Bangkok'
+            }
+          }
+        }}, {$match:{tanggal_real:tanggal_cari}}
+        
       ]).toArray((err, result)=>{
-      if(err) throw err;
+      if(err){
+        console.log(err);
+        throw err;
+      } 
+      console.log("result trace",result);
       callback(err, result);
       db.close();
     });
   });
-
 }
 
 getOneCollection=(doc, where, callback)=>{
   MongoClient.connect(url, function(err, db){
-    if(err) throw err;
+    if(err){
+      console.log(err);
+      throw err;
+    };
     var dbo = db.db("AbsenTikomdik");
     // dbo.createCollection(doc, function(err, res) {
     //   if (err) throw err;
     //   console.log("Collection created!");
     // });
     dbo.collection(doc).find(where).toArray((err, result)=>{
-      if(err) throw err;
+      if(err){
+        console.log(err);
+        throw err;
+      };
       callback(err, result);
       db.close();
     });
@@ -121,27 +152,36 @@ router.get('/show-kedatangan', (req, res, next)=>{
     result_kedatangan.forEach((data,i)=>{
       var send_data = result_kedatangan[i];
       var tanggal_absen = new Date(data.tanggal);
-      console.log("bisa");
-      var jam = new Date(send_data.tanggal).getHours()*60;
-      var menit = new Date(send_data.tanggal).getMinutes();
+      //console.log("bisa", send_data);
+      var waktu = send_data.jam.split(':');
+      var jam = parseInt(waktu[0])*60;
+      var menit = parseInt(waktu[1]);
       getOneCollection('user', {"userid":send_data.pin}, (err, result)=>{
+        //console.log(err);
         var data_user = result[0];
         var param_jam = 450;
+       //console.log('Data before modified', send_data);
         if(result.status_pns!=='undefined' && result.bagian!=='undefined'){
           send_data['waktu'] = param_jam-(jam+menit);
           send_data['nama'] = data_user.name;
           send_data['jabatan'] = data_user.bagian;
           send_data['status_pns'] = data_user.status_pns;
           console.log("Data user", send_data);
-          //io.emit('absen', send_data);
-          if(i===result_kedatangan.length-1){
-            res.send(result_kedatangan);
-          }
+          //io.emit('absen', send_data); 
+
+        }else{
+          delete result_kedatangan[i];
+        }
+        if(i===result_kedatangan.length-1){
+          res.send(result_kedatangan);
         }
       })
     })
   })
 })
+
+
+
 setInterval(()=>{
   console.log('Streaming data...');
   axios.get('http://localhost/Attend/tarik-data.php?ip=192.168.100.41&key=0').then((responder)=>{
@@ -273,7 +313,7 @@ MongoClient.connect(url, function(err, db){
       var jam = new Date(send_data.tanggal).getHours()*60;
       var menit = new Date(send_data.tanggal).getMinutes();
       getOneCollection('user', {"userid":send_data.pin}, (err, result)=>{
-        console.log(result);
+        console.log("User",result);
         var data_user = result[0];
         var param_jam = 450;
         if(result.status_pns!=='undefined' && result.bagian!=='undefined'){
