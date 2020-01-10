@@ -143,6 +143,7 @@ router.get('/show-kedatangan', (req, res, next)=>{
   })
 })
 setInterval(()=>{
+  console.log('Streaming data...');
   axios.get('http://localhost/Attend/tarik-data.php?ip=192.168.100.41&key=0').then((responder)=>{
     if(Array.isArray(responder.data)){
       if(responder.data.length>0){
