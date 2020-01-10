@@ -35,7 +35,7 @@ insertManyCollection=(doc, data, callback)=>{
     });
   });
 }
-
+var belum_datang = [];
 insertOneCollection=(doc, data, callback)=>{
   MongoClient.connect(url, function(err, db){
     if(err) throw err;
@@ -117,6 +117,7 @@ router.get('/show-users', (req, res, next)=>{
 
 router.get('/show-kedatangan', (req, res, next)=>{
   //res.send('Data Requested');
+  belum_datang = [];
   getKedatangan((err, result_kedatangan)=>{
     result_kedatangan.forEach((data,i)=>{
       var send_data = result_kedatangan[i];
@@ -137,6 +138,8 @@ router.get('/show-kedatangan', (req, res, next)=>{
           if(i===result_kedatangan.length-1){
             res.send(result_kedatangan);
           }
+        }else if(result.length<1){
+          belum_datang.push({nama:send_data.name, pin:send_data.pin});
         }
       })
     })
@@ -232,16 +235,9 @@ router.get('/sync-user', (req, res, next)=>{
 });
 
 router.get('/cobain', (req, res, next)=>{
-  var data = [
-    {waktu:10, status:'cepat', nama:'Luthfi'},
-    {waktu:2, status:'cepat', nama:'Luthfi'},
-    {waktu:9, status:'cepat', nama:'Luthfi'},
-    {waktu:-20, status:'telat', nama:'Luthfi'},
-    {waktu:-5, status:'telat', nama:'Luthfi'}, 
-  ];
   
-  console.log(data.indexOf("nama").valueOf());
-  res.send('s');
+
+  res.send(belum_datang);
 })
 
 const io = require('socket.io')(4000, {

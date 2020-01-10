@@ -885,6 +885,14 @@ class Absen extends React.Component{
                       </CardBody>
                     </Card>
                   </Col>
+                  <Col xl="6">
+                    <Card>
+                      <CardHeader>Yang belum datang</CardHeader>
+                      <CardBody>
+                        qiofqofqwoi
+                      </CardBody>
+                    </Card>
+                  </Col>
                 </Row>
               </div>
             
