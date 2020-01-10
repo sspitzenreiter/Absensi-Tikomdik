@@ -417,11 +417,11 @@ class Absen extends React.Component{
             }
             this.setState({data_absen:set_data});
         }
-        const socket = io('http://192.168.100.97:4000', {
+        const socket = io('http://localhost:4000', {
             autoConnect:true
         });
-        axios.get('http://192.168.100.97:3500/show-kedatangan').then((response)=>{
-          this.setGraphData({target:"produksi_non", telat:0, cepat:0, status_tampil:'reset'});
+        axios.get('http://localhost:3500/show-kedatangan').then((response)=>{
+          
           response.data.forEach((item, i)=>{
             this.insertDataToGraph(item);
           })
@@ -444,10 +444,10 @@ class Absen extends React.Component{
         case "6":
           target = "produksi_";
         break;
-        case "4":
+        case "5":
           target = "promosi_";
         break;
-        case "5":
+        case "7":
           target = "tatausaha_";
         break;
       }
