@@ -2,6 +2,7 @@ import React from 'react';
 import {Container, Row, Col, CardHeader, CardBody, Card, Table} from 'reactstrap';
 import io from 'socket.io-client';
 import Chart from 'react-apexcharts';
+import GrafikAbsen from './GrafikAbsen';
 import axios from 'axios';
 class Absen extends React.Component{
     constructor(props){
@@ -14,67 +15,79 @@ class Absen extends React.Component{
           telat:'#eb4634'
         }
         this.state = {
-            series: [{
-              name: 'Males',
-              data: [0.4, 0.65, 0.76, 0.88, 1.5, 2.1, 2.9, 3.8, 3.9, 4.2, 4, 4.3, 4.1, 4.2, 4.5,
-                3.9, 3.5, 3
-              ]
+            tatausaha_pns_data:{
+              warna:absen_color,
+              parameter:{
+                telat:-60,
+                cepat:60
+              },
+              waktu:{
+                telat:[0],
+                cepat:[0]
+              },
+              pegawai:['Tidak Ada']
             },
-            {
-              name: 'Females',
-              data: [-0.8, -1.05, -1.06, -1.18, -1.4, -2.2, -2.85, -3.7, -3.96, -4.22, -4.3, -4.4,
-                -4.1, -4, -4.1, -3.4, -3.1, -2.8
-              ]
-            }
-            ],
-            options: {
-              chart: {
-                type: 'bar',
-                height: 440,
-                stacked: true,
-                toolbar: {
-                  show: false
-                }
+            tatausaha_non_data:{
+              warna:absen_color,
+              parameter:{
+                telat:-60,
+                cepat:60
               },
-              colors: [absen_color.telat, absen_color.cepat],
-              plotOptions: {
-                bar: {
-                  horizontal: true,
-                  barHeight: '80%',
-                  dataLabels:{
-                    position:tulisan_position
-                  }
-                },
+              waktu:{
+                telat:[0],
+                cepat:[0]
               },
-              stroke: {
-                width: 1,
-                colors: ["#fff"]
-              },
-              yaxis: {
-                min: -5,
-                max: 5,
-                title: {
-                  // text: 'Age',
-                },
-              },
-              title: {
-                text: 'PNS'
-              },
-              xaxis: {
-                categories: ['85+', '80-84', '75-79', '70-74', '65-69', '60-64', '55-59', '50-54',
-                  '45-49', '40-44', '35-39', '30-34', '25-29', '20-24', '15-19', '10-14', '5-9',
-                  '0-4'
-                ],
-                title: {
-                  text: ''
-                },
-                labels: {
-                  formatter: function (val) {
-                    return Math.abs(Math.round(val))
-                  }
-                }
-              },
+              pegawai:['Tidak Ada']
             },
+            produksi_pns_data:{
+              warna:absen_color,
+              parameter:{
+                telat:-60,
+                cepat:60
+              },
+              waktu:{
+                telat:[0],
+                cepat:[0]
+              },
+              pegawai:['Tidak Ada']
+            },
+            produksi_non_data:{
+              warna:absen_color,
+              parameter:{
+                telat:-60,
+                cepat:60
+              },
+              waktu:{
+                telat:[0],
+                cepat:[0]
+              },
+              pegawai:['Tidak Ada']
+            },
+            promosi_pns_data:{
+              warna:absen_color,
+              parameter:{
+                telat:-60,
+                cepat:60
+              },
+              waktu:{
+                telat:[0],
+                cepat:[0]
+              },
+              pegawai:['Tidak Ada']
+            },
+            promosi_non_data:{
+              warna:absen_color,
+              parameter:{
+                telat:-60,
+                cepat:60
+              },
+              waktu:{
+                telat:[0],
+                cepat:[0]
+              },
+              pegawai:['Tidak Ada']
+            },
+            
             config_produksi_pns:{
               series: [{
                 name: 'Telat',
@@ -394,36 +407,15 @@ class Absen extends React.Component{
     }
 
     componentDidMount(){
-        const setAbsensi=(data)=>{
-            var set_data = this.state.data_absen;
-            var tanggal = new Date(data.tanggal);
-            var jam = tanggal.getHours();
-            var menit = tanggal.getMinutes();
-            var param_jam = 16;
-            if(jam>=param_jam){
-                var jam_telat = jam-param_jam;
-                var menit_telat = menit;
-                data['info_datang']="Telat "+jam_telat+" jam "+menit_telat+" menit";
-            }
-            if(set_data.length>=10){
-                set_data.unshift(data);
-                set_data.pop();
-            }else{
-                if(set_data.length>0){
-                    set_data.unshift(data);
-                }else{
-                    set_data.push(data);
-                }
-            }
-            this.setState({data_absen:set_data});
-        }
+        
         const socket = io('http://localhost:4000', {
             autoConnect:true
         });
-        axios.get('http://localhost:3500/show-kedatangan').then((response)=>{
+        axios.get('http://localhost:3500/rekap-absen').then((response)=>{
           
-          response.data.forEach((item, i)=>{
+          response.data.data_rekap.forEach((item, i)=>{
             this.insertDataToGraph(item);
+            
           })
         }).catch((err)=>{
           console.log(err);
@@ -440,7 +432,7 @@ class Absen extends React.Component{
     
     insertDataToGraph=(data)=>{
       var target = "";
-      switch(data.jabatan){
+      switch(data.bagian){
         case "6":
           target = "produksi_";
         break;
@@ -474,372 +466,180 @@ class Absen extends React.Component{
       }
       switch(graphname){
         case "produksi_pns":
-          if(this.state.config_produksi_pns.option.xaxis.categories[0]=="Tidak ada" || data.status_tampil == "reset" ){
+          if(this.state.produksi_pns_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
-                config_produksi_pns:{
-                  option:{
-                    ...prevState.config_produksi_pns.option,
-                    xaxis:{
-                      categories: [data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                promosi_pns_data:{
+                  ...prevState.produksi_pns_data,
+                  waktu:{
+                    telat:[data.telat],
+                    cepat:[data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [data.cepat]
-                  }]
+                  pegawai:[data.name]
                 }
               }
             })
           }else{
             this.setState(prevState=>{
               return {
-                config_produksi_pns:{
-                  option:{
-                    ...prevState.config_produksi_pns.option,
-                    xaxis:{
-                      categories: [...prevState.config_produksi_pns.option.xaxis.categories, data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                produksi_pns_data:{
+                  ...prevState.produksi_pns_data,
+                  waktu:{
+                    telat:[...prevState.produksi_pns_data.waktu.telat, data.telat],
+                    cepat:[...prevState.produksi_pns_data.waktu.cepat, data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [...prevState.config_produksi_pns.series[0].data, data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [...prevState.config_produksi_pns.series[1].data, data.cepat]
-                  }]
+                  pegawai:[...prevState.produksi_pns_data.pegawai, data.name]
                 }
               }
             })
           }
         break;
         case "produksi_non":
-          if(this.state.config_produksi_non.option.xaxis.categories[0]=="Tidak ada" || data.status_tampil == "reset" ){
+          if(this.state.produksi_non_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
-                config_produksi_non:{
-                  option:{
-                    ...prevState.config_produksi_non.option,
-                    xaxis:{
-                      categories: [data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                produksi_non_data:{
+                  ...prevState.produksi_non_data,
+                  waktu:{
+                    telat:[data.telat],
+                    cepat:[data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [data.cepat]
-                  }]
+                  pegawai:[data.name]
                 }
               }
             })
           }else{
             this.setState(prevState=>{
               return {
-                config_produksi_non:{
-                  option:{
-                    ...prevState.config_produksi_non.option,
-                    xaxis:{
-                      categories: [...prevState.config_produksi_non.option.xaxis.categories, data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                produksi_non_data:{
+                  ...prevState.produksi_non_data,
+                  waktu:{
+                    telat:[...prevState.produksi_non_data.waktu.telat, data.telat],
+                    cepat:[...prevState.produksi_non_data.waktu.cepat, data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [...prevState.config_produksi_non.series[0].data, data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [...prevState.config_produksi_non.series[1].data, data.cepat]
-                  }]
+                  pegawai:[...prevState.produksi_non_data.pegawai, data.name]
                 }
               }
             })
           }
         break;
         case "promosi_pns":
-          if(this.state.config_promosi_pns.option.xaxis.categories[0]=="Tidak ada" || data.status_tampil == "reset" ){
+          if(this.state.promosi_pns_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
-                config_promosi_pns:{
-                  option:{
-                    ...prevState.config_promosi_pns.option,
-                    xaxis:{
-                      categories: [data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                promosi_non_data:{
+                  ...prevState.promosi_pns_data,
+                  waktu:{
+                    telat:[data.telat],
+                    cepat:[data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [data.cepat]
-                  }]
+                  pegawai:[data.name]
                 }
               }
             })
           }else{
             this.setState(prevState=>{
               return {
-                config_promosi_pns:{
-                  option:{
-                    ...prevState.config_promosi_pns.option,
-                    xaxis:{
-                      categories: [...prevState.config_promosi_pns.option.xaxis.categories, data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                promosi_non_data:{
+                  ...prevState.promosi_pns_data,
+                  waktu:{
+                    telat:[...prevState.promosi_pns_data.waktu.telat, data.telat],
+                    cepat:[...prevState.promosi_pns_data.waktu.cepat, data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [...prevState.config_promosi_pns.series[0].data, data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [...prevState.config_promosi_pns.series[1].data, data.cepat]
-                  }]
+                  pegawai:[...prevState.promosi_pns_data.pegawai, data.name]
                 }
               }
             })
           }
         break;
         case "promosi_non":
-          if(this.state.config_promosi_non.option.xaxis.categories[0]=="Tidak ada" || data.status_tampil == "reset" ){
+          if(this.state.promosi_non_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
-                config_promosi_non:{
-                  option:{
-                    ...prevState.config_promosi_non.option,
-                    xaxis:{
-                      categories: [data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                promosi_non_data:{
+                  ...prevState.promosi_non_data,
+                  waktu:{
+                    telat:[data.telat],
+                    cepat:[data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [data.cepat]
-                  }]
+                  pegawai:[data.name]
                 }
               }
             })
           }else{
             this.setState(prevState=>{
               return {
-                config_promosi_non:{
-                  option:{
-                    ...prevState.config_promosi_non.option,
-                    xaxis:{
-                      categories: [...prevState.config_promosi_non.option.xaxis.categories, data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                promosi_non_data:{
+                  ...prevState.promosi_non_data,
+                  waktu:{
+                    telat:[...prevState.promosi_non_data.waktu.telat, data.telat],
+                    cepat:[...prevState.promosi_non_data.waktu.cepat, data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [...prevState.config_promosi_non.series[0].data, data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [...prevState.config_promosi_non.series[1].data, data.cepat]
-                  }]
+                  pegawai:[...prevState.promosi_non_data.pegawai, data.name]
                 }
               }
             })
           }
         break;
         case "tatausaha_pns":
-          if(this.state.config_tatausaha_pns.option.xaxis.categories[0]=="Tidak ada" || data.status_tampil == "reset" ){
+          if(this.state.tatausaha_pns_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
-                config_tatausaha_pns:{
-                  option:{
-                    ...prevState.config_tatausaha_pns.option,
-                    xaxis:{
-                      categories: [data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                tatausaha_pns_data:{
+                  ...prevState.tatausaha_pns_data,
+                  waktu:{
+                    telat:[data.telat],
+                    cepat:[data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [data.cepat]
-                  }]
+                  pegawai:[data.name]
                 }
               }
             })
           }else{
             this.setState(prevState=>{
               return {
-                config_tatausaha_pns:{
-                  option:{
-                    ...prevState.config_tatausaha_pns.option,
-                    xaxis:{
-                      categories: [...prevState.config_tatausaha_pns.option.xaxis.categories, data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                tatausaha_pns_data:{
+                  ...prevState.tatausaha_pns_data,
+                  waktu:{
+                    telat:[...prevState.tatausaha_pns_data.waktu.telat, data.telat],
+                    cepat:[...prevState.tatausaha_pns_data.waktu.cepat, data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [...prevState.config_tatausaha_pns.series[0].data, data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [...prevState.config_tatausaha_pns.series[1].data, data.cepat]
-                  }]
+                  pegawai:[...prevState.tatausaha_pns_data.pegawai, data.name]
                 }
               }
             })
           }
         break;
         case "tatausaha_non":
-          if(this.state.config_tatausaha_non.option.xaxis.categories[0]=="Tidak ada" || data.status_tampil == "reset" ){
+          if(this.state.tatausaha_non_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
-                config_tatausaha_non:{
-                  option:{
-                    ...prevState.config_tatausaha_non.option,
-                    xaxis:{
-                      categories: [data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                tatausaha_non_data:{
+                  ...prevState.tatausaha_non_data,
+                  waktu:{
+                    telat:[data.telat],
+                    cepat:[data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [data.cepat]
-                  }]
+                  pegawai:[data.name]
                 }
               }
             })
           }else{
             this.setState(prevState=>{
               return {
-                config_tatausaha_non:{
-                  option:{
-                    ...prevState.config_tatausaha_non.option,
-                    xaxis:{
-                      categories: [...prevState.config_tatausaha_non.option.xaxis.categories, data.nama],
-                      title: {
-                        text: ''
-                      },
-                      labels: {
-                        formatter: function (val) {
-                          return Math.abs(Math.round(val))
-                        }
-                      }
-                    }
+                tatausaha_non_data:{
+                  ...prevState.tatausaha_non_data,
+                  waktu:{
+                    telat:[...prevState.tatausaha_non_data.waktu.telat, data.telat],
+                    cepat:[...prevState.tatausaha_non_data.waktu.cepat, data.cepat]
                   },
-                  series: [{
-                    name: 'Telat',
-                    data: [...prevState.config_tatausaha_non.series[0].data, data.telat]
-                  },
-                  {
-                    name: 'Cepat',
-                    data: [...prevState.config_tatausaha_non.series[1].data, data.cepat]
-                  }]
+                  pegawai:[...prevState.tatausaha_non_data.pegawai, data.name]
                 }
               }
             })
           }
-        break;
-      }
+          break;
+        }
     }
 
     render(){
@@ -851,8 +651,8 @@ class Absen extends React.Component{
                       <CardHeader onClick={this.setGraph}>Tata Usaha</CardHeader>
                       <CardBody>
                         <Row>
-                          <Col xl="6"><Chart options={this.state.config_tatausaha_pns.option} series={this.state.config_tatausaha_pns.series} type="bar" height={350} /></Col>
-                          <Col xl="6"><Chart options={this.state.config_tatausaha_non.option} series={this.state.config_tatausaha_non.series} type="bar" height={350} /></Col>
+                          <Col xl="6"><GrafikAbsen title="PNS" warna={this.state.tatausaha_pns_data.warna} waktu={this.state.tatausaha_pns_data.waktu} parameter={this.state.tatausaha_pns_data.parameter} pegawai={this.state.tatausaha_pns_data.pegawai}/></Col>
+                          <Col xl="6"><GrafikAbsen title="Non PNS" warna={this.state.tatausaha_non_data.warna} waktu={this.state.tatausaha_non_data.waktu} parameter={this.state.tatausaha_non_data.parameter} pegawai={this.state.tatausaha_non_data.pegawai}/></Col>
                         </Row>
                       </CardBody>
                     </Card>
@@ -862,8 +662,8 @@ class Absen extends React.Component{
                       <CardHeader>Promosi</CardHeader>
                       <CardBody>
                         <Row>
-                          <Col xl="6"><Chart options={this.state.config_promosi_pns.option} series={this.state.config_promosi_pns.series} type="bar" height={350} /></Col>
-                          <Col xl="6"><Chart options={this.state.config_promosi_non.option} series={this.state.config_promosi_non.series} type="bar" height={350} /></Col>
+                        <Col xl="6"><GrafikAbsen title="PNS" warna={this.state.promosi_pns_data.warna} waktu={this.state.promosi_pns_data.waktu} parameter={this.state.promosi_pns_data.parameter} pegawai={this.state.promosi_pns_data.pegawai}/></Col>
+                          <Col xl="6"><GrafikAbsen title="Non PNS" warna={this.state.promosi_non_data.warna} waktu={this.state.promosi_non_data.waktu} parameter={this.state.promosi_non_data.parameter} pegawai={this.state.promosi_non_data.pegawai}/></Col>
                         </Row>
                       </CardBody>
                     </Card>
@@ -879,8 +679,8 @@ class Absen extends React.Component{
                       <CardHeader>Produksi</CardHeader>
                       <CardBody>
                         <Row>
-                          <Col xl="6"><Chart options={this.state.config_produksi_pns.option} series={this.state.config_produksi_pns.series} type="bar" height={350} /></Col>
-                          <Col xl="6"><Chart options={this.state.config_produksi_non.option} series={this.state.config_produksi_non.series} type="bar" height={350} /></Col>
+                        <Col xl="6"><GrafikAbsen title="PNS" warna={this.state.produksi_pns_data.warna} waktu={this.state.produksi_pns_data.waktu} parameter={this.state.produksi_pns_data.parameter} pegawai={this.state.produksi_pns_data.pegawai}/></Col>
+                          <Col xl="6"><GrafikAbsen title="Non PNS" warna={this.state.produksi_non_data.warna} waktu={this.state.produksi_non_data.waktu} parameter={this.state.produksi_non_data.parameter} pegawai={this.state.produksi_non_data.pegawai}/></Col>
                         </Row>
                       </CardBody>
                     </Card>

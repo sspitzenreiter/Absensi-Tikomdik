@@ -6,7 +6,7 @@ var MongoClient = mongo.MongoClient;
 var url = "mongodb://localhost:27017/";
 const ZKLib = require('zklib');
 const axios = require('axios');
-var waterfall = require('async-waterfall');
+var async = require('async')
 ZK = new ZKLib({
   ip: '192.168.100.41',
   port: 4370,
@@ -73,7 +73,7 @@ getKedatangan=(callback)=>{
     };
     var dbo = db.db("AbsenTikomdik");
     var tanggal_server = new Date();
-    var hari = tanggal_server.getDate();
+    var hari = tanggal_server.getDate()-1;
     var bulan = tanggal_server.getMonth()+1;
     var tahun = tanggal_server.getFullYear();
     if(hari<10){
@@ -82,7 +82,7 @@ getKedatangan=(callback)=>{
     if(bulan<10){
       bulan = "0"+bulan;
     }
-    console.log(hari+"-"+bulan+"-"+tahun);
+    //console.log(hari+"-"+bulan+"-"+tahun);
     var tanggal_cari = hari+"-"+bulan+"-"+tahun;
     dbo.collection('kedatangan').aggregate(
       [
@@ -108,7 +108,7 @@ getKedatangan=(callback)=>{
         console.log(err);
         throw err;
       } 
-      console.log("result trace",result);
+      //console.log("result trace",result);
       callback(err, result);
       db.close();
     });
@@ -187,44 +187,44 @@ router.get('/show-kedatangan', (req, res, next)=>{
 
 
 
-setInterval(()=>{
-  console.log('Streaming data...');
-  axios.get('http://localhost/Attend/tarik-data.php?ip=192.168.100.41&key=0').then((responder)=>{
-    if(Array.isArray(responder.data)){
-      if(responder.data.length>0){
-        // insertManyCollection('kedatangan_dump', responder.data, (err, result)=>{
+// setInterval(()=>{
+//   console.log('Streaming data...');
+//   axios.get('http://localhost/Attend/tarik-data.php?ip=192.168.100.41&key=0').then((responder)=>{
+//     if(Array.isArray(responder.data)){
+//       if(responder.data.length>0){
+//         // insertManyCollection('kedatangan_dump', responder.data, (err, result)=>{
           
-        // });
-        responder.data.forEach((data, i)=>{
-          data.tanggal = new Date(data.tanggal);
-          getOneCollection('kedatangan', data, (err, result)=>{
-            if(result.length<1){
-              console.log('Data Gak ada, Inserting');
-              insertOneCollection('kedatangan', data, (err, result)=>{
+//         // });
+//         responder.data.forEach((data, i)=>{
+//           data.tanggal = new Date(data.tanggal);
+//           getOneCollection('kedatangan', data, (err, result)=>{
+//             if(result.length<1){
+//               console.log('Data Gak ada, Inserting');
+//               insertOneCollection('kedatangan', data, (err, result)=>{
                 
-              });
-            }
-          });
-        });
-        // insertManyCollection('kedatangan', responder.data, (err, result)=>{
+//               });
+//             }
+//           });
+//         });
+//         // insertManyCollection('kedatangan', responder.data, (err, result)=>{
            
-        // });
-      }else{
-        console.log('Data Kosong');
-      }    
-    }else{
-      console.log('Data error');
-    }
-  }).catch((error)=>{
-    console.log(error);
-  });
-  if(new Date().getHours()==12){
-    // axios.get("http://localhost/attend/PHP-soap-baru/clear-data.php?ip=192.168.100.41&key=0").then((clear_responden)=>{
+//         // });
+//       }else{
+//         console.log('Data Kosong');
+//       }    
+//     }else{
+//       console.log('Data error');
+//     }
+//   }).catch((error)=>{
+//     console.log(error);
+//   });
+//   if(new Date().getHours()==12){
+//     // axios.get("http://localhost/attend/PHP-soap-baru/clear-data.php?ip=192.168.100.41&key=0").then((clear_responden)=>{
       
-    //     //res.send('Sukses');
-    // });
-  }
-}, 5000)
+//     //     //res.send('Sukses');
+//     // });
+//   }
+// }, 5000)
 
 router.get('/sync-data', (req, res, next)=>{
   axios.get('http://localhost/attend/PHP-soap-baru/tarik-data.php?ip=192.168.100.41&key=0').then((responder)=>{
@@ -338,35 +338,72 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/rekap-absen', (req, res, next)=>{
-  getKedatangan((err, result_kedatangan)=>{
-    result_kedatangan.forEach((data,i)=>{
-      var send_data = result_kedatangan[i];
-      var tanggal_absen = new Date(data.tanggal);
-      //console.log("bisa", send_data);
-      var waktu = send_data.jam.split(':');
-      var jam = parseInt(waktu[0])*60;
-      var menit = parseInt(waktu[1]);
-      getOneCollection('user', {"userid":send_data.pin}, (err, result)=>{
-        //console.log(err);
-        var data_user = result[0];
-        var param_jam = 450;
-       //console.log('Data before modified', send_data);
-        if(result.status_pns!=='undefined' && result.bagian!=='undefined'){
-          send_data['waktu'] = param_jam-(jam+menit);
-          send_data['nama'] = data_user.name;
-          send_data['jabatan'] = data_user.bagian;
-          send_data['status_pns'] = data_user.status_pns;
-          console.log("Data user", send_data);
-        }else{
-          delete result_kedatangan[i];
-        }
-        if(i===result_kedatangan.length-1){
-          var data = {result:result_kedatangan};
-          res.send(data);
-        }
+  //res.send('Data Requested');
+  var data = req.query;
+  var search_query = {};
+  if(typeof data.status_pns!=='undefined'){
+    search_query={
+      status_pns:data.status_pns
+    }
+  }
+  if(typeof data.bagian!=='undefined'){
+    search_query={
+      ...search_query,
+      bagian:data.bagian
+    }
+  }
+  
+  async.waterfall([
+    (callback)=>{
+      getKedatangan((err, result)=>{
+        callback(null, result);
       })
-    })
-  })
+    },(result,callback)=>{
+      var data_pergi = [];
+      var data_pulang = [];
+      for(var a=0;a<result.length;a++){
+        var param_jam = 450;
+        var data = result[a];
+        var waktu = data.jam.split(':');
+        var jam = parseInt(waktu[0])*60;
+        var menit = parseInt(waktu[1]);
+        data['waktu'] = param_jam-(parseInt(jam)+parseInt(menit));
+        var get = data_pergi.find(x=>x.pin===data.pin);
+        if(get!=='undefined'){
+          data_pergi.push(data);
+        }else{
+          data_pulang.push(data);
+        }
+      }
+      callback(null, {pergi:data_pergi, pulang:data_pulang});
+    },(result, callback)=>{
+      //console.log(Object.values(result.pergi.map(value=>value.pin)));
+      var finished_process = [];
+      async.waterfall([
+        (callback)=>{
+          // console.log({"userid":{"$in":Object.values(result.pergi.map(value=>value.pin))}, ...search_query});
+          getCollection('user', {"userid":{"$in":Object.values(result.pergi.map(value=>value.pin))}, ...search_query}, (result_data)=>{
+            //res.send(result_data);
+            
+            callback(null, result_data);
+          })
+        },(result_sub, callback)=>{
+          result_sub.forEach((item, i)=>{
+           //console.log(result);
+            var data = {...item, ...result.pergi.find(x=>x.pin===item.userid)};
+            console.log(data);
+            finished_process.push(data);
+            if(i===result_sub.length-1){
+              callback(null);
+            }
+            
+          })
+        },(callback)=>{
+          res.send({data_rekap:finished_process});
+        }
+      ])
+    }
+  ])
 })
 
 module.exports = router;
