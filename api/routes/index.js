@@ -137,6 +137,13 @@ getOneCollection=(doc, where, callback)=>{
   });
 }
 
+router.get('/raw-data', (req, res, next)=>{
+  var data = req.query;
+  getCollection(data.table, {}, (result)=>{
+    res.send(result);
+  })
+})
+
 router.get('/show-users', (req, res, next)=>{
   getCollection('user', {}, (result)=>{
     for(var a=0;a<result.length;a++){
