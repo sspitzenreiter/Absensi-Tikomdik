@@ -15,6 +15,7 @@ class Absen extends React.Component{
           telat:'#eb4634'
         }
         this.state = {
+            belum_datang:[],
             tatausaha_pns_data:{
               warna:absen_color,
               parameter:{
@@ -87,333 +88,17 @@ class Absen extends React.Component{
               },
               pegawai:['Tidak Ada']
             },
-            
-            config_produksi_pns:{
-              series: [{
-                name: 'Telat',
-                data: [0]
-              },
-              {
-                name: 'Cepat',
-                data: [0]
-              }
-              ],
-              option: {
-                chart: {
-                  type: 'bar',
-                  height: 440,
-                  stacked: true,
-                  toolbar: {
-                    show: false
-                  }
-                },
-                colors: [absen_color.telat, absen_color.cepat],
-                plotOptions: {
-                  bar: {
-                    dataLabels:{
-                      position:'bottom'
-                    },
-                    horizontal: true,
-                    barHeight: '80%',
-                    formatter: (val, opt)=> {
-                      return val
-                    }
-                  }
-                },
-                yaxis: {
-                  min: jam_telat,
-                  max: jam_cepat,
-                  title: {
-                    // text: 'Age',
-                  },
-                },
-                title: {
-                  text: 'PNS'
-                },
-                xaxis: {
-                  categories: ['Tidak ada'],
-                  title: {
-                    text: ''
-                  },
-                  labels: {
-                    formatter: function (val) {
-                      return Math.abs(Math.round(val))
-                    }
-                  }
-                },
-              },
-            },
-            config_produksi_non:{
-              series: [{
-                name: 'Telat',
-                data: [0]
-              },
-              {
-                name: 'Cepat',
-                data: [0]
-              }
-              ],
-              option: {
-                chart: {
-                  type: 'bar',
-                  height: 440,
-                  stacked: true,
-                  toolbar: {
-                    show: false
-                  }
-                },
-                colors: [absen_color.telat, absen_color.cepat],
-                plotOptions: {
-                  bar: {
-                    horizontal: true,
-                    barHeight: '80%',
-                    dataLabels:{
-                      position:'bottom'
-                    },
-                  },
-                },
-                yaxis: {
-                  min: jam_telat,
-                  max: jam_cepat,
-                  title: {
-                    // text: 'Age',
-                  },
-                },
-                title: {
-                  text: 'Non PNS'
-                },
-                xaxis: {
-                  categories: ['Tidak ada'],
-                  title: {
-                    text: ''
-                  },
-                  labels: {
-                    formatter: function (val) {
-                      return Math.abs(Math.round(val))
-                    }
-                  }
-                },
-              },
-            },
-            config_tatausaha_pns:{
-              series: [{
-                name: 'Telat',
-                data: [0]
-              },
-              {
-                name: 'Cepat',
-                data: [0]
-              }
-              ],
-              option: {
-                chart: {
-                  type: 'bar',
-                  height: 440,
-                  stacked: true,
-                  toolbar: {
-                    show: false
-                  }
-                },
-                colors: [absen_color.telat, absen_color.cepat],
-                plotOptions: {
-                  bar: {
-                    horizontal: true,
-                    barHeight: '80%',
-                    dataLabels:{
-                      position:'bottom'
-                    },
-                  },
-                },
-                yaxis: {
-                  min: jam_telat,
-                  max: jam_cepat,
-                  title: {
-                    // text: 'Age',
-                  },
-                },
-                title: {
-                  text: 'PNS'
-                },
-                xaxis: {
-                  categories: ['Tidak ada'],
-                  title: {
-                    text: ''
-                  },
-                  labels: {
-                    formatter: function (val) {
-                      return Math.abs(Math.round(val))
-                    }
-                  }
-                },
-              },
-            },
-            config_tatausaha_non:{
-              series: [{
-                name: 'Telat',
-                data: [0]
-              },
-              {
-                name: 'Cepat',
-                data: [0]
-              }
-              ],
-              option: {
-                chart: {
-                  type: 'bar',
-                  height: 440,
-                  stacked: true,
-                  toolbar: {
-                    show: false
-                  }
-                },
-                colors: [absen_color.telat, absen_color.cepat],
-                plotOptions: {
-                  bar: {
-                    horizontal: true,
-                    barHeight: '80%',
-                    dataLabels:{
-                      position:'bottom'
-                    },
-                  },
-                },
-                yaxis: {
-                  min: jam_telat,
-                  max: jam_cepat,
-                  title: {
-                    // text: 'Age',
-                  },
-                },
-                title: {
-                  text: 'Non PNS'
-                },
-                xaxis: {
-                  categories: ['Tidak ada'],
-                  title: {
-                    text: ''
-                  },
-                  labels: {
-                    formatter: function (val) {
-                      return Math.abs(Math.round(val))
-                    }
-                  }
-                },
-              },
-            },
-            config_promosi_pns:{
-              series: [{
-                name: 'Telat',
-                data: [0]
-              },
-              {
-                name: 'Cepat',
-                data: [0]
-              }
-              ],
-              option: {
-                chart: {
-                  type: 'bar',
-                  height: 440,
-                  stacked: true,
-                  toolbar: {
-                    show: false
-                  }
-                },
-                colors: [absen_color.telat, absen_color.cepat],
-                plotOptions: {
-                  bar: {
-                    horizontal: true,
-                    barHeight: '80%',
-                    dataLabels:{
-                      position:'bottom'
-                    },
-                  },
-                },
-                yaxis: {
-                  min: jam_telat,
-                  max: jam_cepat,
-                  title: {
-                    // text: 'Age',
-                  },
-                },
-                title: {
-                  text: 'PNS'
-                },
-                xaxis: {
-                  categories: ['Tidak ada'],
-                  title: {
-                    text: ''
-                  },
-                  labels: {
-                    formatter: function (val) {
-                      return Math.abs(Math.round(val))
-                    }
-                  }
-                },
-              },
-            },
-            config_promosi_non:{
-              series: [{
-                name: 'Telat',
-                data: [0]
-              },
-              {
-                name: 'Cepat',
-                data: [0]
-              }
-              ],
-              option: {
-                chart: {
-                  type: 'bar',
-                  height: 440,
-                  stacked: true,
-                  toolbar: {
-                    show: false
-                  }
-                },
-                colors: [absen_color.telat, absen_color.cepat],
-                plotOptions: {
-                  bar: {
-                    horizontal: true,
-                    barHeight: '80%',
-                    dataLabels:{
-                      position:'bottom'
-                    },
-                  },
-                },
-                yaxis: {
-                  min: jam_telat,
-                  max: jam_cepat,
-                  title: {
-                    // text: 'Age',
-                  },
-                },
-                title: {
-                  text: 'Non PNS'
-                },
-                xaxis: {
-                  categories: ['Tidak ada'],
-                  title: {
-                    text: ''
-                  },
-                  labels: {
-                    formatter: function (val) {
-                      return Math.abs(Math.round(val))
-                    }
-                  }
-                },
-              },
-            }
         }
     }
 
     componentDidMount(){
         
-        const socket = io('http://localhost:4000', {
+        const socket = io('http://192.168.100.95:4000', {
             autoConnect:true
         });
-        axios.get('http://localhost:3500/rekap-absen').then((response)=>{
-          
-          response.data.data_rekap.forEach((item, i)=>{
+        axios.get('http://192.168.100.95:3500/rekap-absen').then((response)=>{
+          this.setState({belum_datang:response.data.list_rekap_absen.belum_datang.map(value=>value.name)});
+          response.data.list_rekap_absen.pergi.forEach((item, i)=>{
             this.insertDataToGraph(item);
             
           })
@@ -424,7 +109,17 @@ class Absen extends React.Component{
           
         });
         
+        socket.on('coba', data=>{
+          
+        })
+
         socket.on('absen', data=>{
+          var index = this.state.belum_datang.indexOf(data.name);
+          if(index>-1){
+            this.state.belum_datang.splice(index, 1);
+            
+          }
+          
           this.insertDataToGraph(data);
         });
        
@@ -643,8 +338,19 @@ class Absen extends React.Component{
     }
 
     render(){
+        var belum_datang = this.state.belum_datang.map((content, i)=>
+           {
+             
+             return(
+              <Col md="3">{content}</Col>
+             )
+          }
+        )
         return(
             <div>
+                <Row>
+                  <Col><h2 style={{"text-align":'center'}}>Kehadiran</h2></Col>
+                </Row>
                 <Row>
                   <Col xl="6">
                     <Card>
@@ -672,7 +378,7 @@ class Absen extends React.Component{
                 <br/>
                 <br/>
                 <br/>
-                <br/>
+               
                 <Row>
                   <Col xl="6">
                     <Card>
@@ -686,10 +392,12 @@ class Absen extends React.Component{
                     </Card>
                   </Col>
                   <Col xl="6">
-                    <Card>
-                      <CardHeader>Yang belum datang</CardHeader>
-                      <CardBody>
-                        qiofqofqwoi
+                    <Card >
+                      <CardHeader>Belum datang</CardHeader>
+                      <CardBody style={{"height":"450px", "float":"left"}}>
+                        <Row>
+                        {belum_datang}
+                        </Row>
                       </CardBody>
                     </Card>
                   </Col>

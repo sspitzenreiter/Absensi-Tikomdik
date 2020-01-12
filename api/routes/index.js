@@ -73,7 +73,7 @@ getKedatangan=(callback)=>{
     };
     var dbo = db.db("AbsenTikomdik");
     var tanggal_server = new Date();
-    var hari = tanggal_server.getDate()-2;
+    var hari = tanggal_server.getDate();
     var bulan = tanggal_server.getMonth()+1;
     var tahun = tanggal_server.getFullYear();
     if(hari<10){
@@ -193,44 +193,44 @@ router.get('/show-kedatangan', (req, res, next)=>{
 
 
 
-// setInterval(()=>{
-//   console.log('Streaming data...');
-//   axios.get('http://localhost/Attend/tarik-data.php?ip=192.168.100.41&key=0').then((responder)=>{
-//     if(Array.isArray(responder.data)){
-//       if(responder.data.length>0){
-//         // insertManyCollection('kedatangan_dump', responder.data, (err, result)=>{
+setInterval(()=>{
+  console.log('Streaming data...');
+  axios.get('http://localhost/Attend/tarik-data.php?ip=192.168.100.41&key=0').then((responder)=>{
+    if(Array.isArray(responder.data)){
+      if(responder.data.length>0){
+        // insertManyCollection('kedatangan_dump', responder.data, (err, result)=>{
           
-//         // });
-//         responder.data.forEach((data, i)=>{
-//           data.tanggal = new Date(data.tanggal);
-//           getOneCollection('kedatangan', data, (err, result)=>{
-//             if(result.length<1){
-//               console.log('Data Gak ada, Inserting');
-//               insertOneCollection('kedatangan', data, (err, result)=>{
+        // });
+        responder.data.forEach((data, i)=>{
+          data.tanggal = new Date(data.tanggal);
+          getOneCollection('kedatangan', data, (err, result)=>{
+            if(result.length<1){
+              console.log('Data Gak ada, Inserting');
+              insertOneCollection('kedatangan', data, (err, result)=>{
                 
-//               });
-//             }
-//           });
-//         });
-//         // insertManyCollection('kedatangan', responder.data, (err, result)=>{
+              });
+            }
+          });
+        });
+        // insertManyCollection('kedatangan', responder.data, (err, result)=>{
            
-//         // });
-//       }else{
-//         console.log('Data Kosong');
-//       }    
-//     }else{
-//       console.log('Data error');
-//     }
-//   }).catch((error)=>{
-//     console.log(error);
-//   });
-//   if(new Date().getHours()==12){
-//     // axios.get("http://localhost/attend/PHP-soap-baru/clear-data.php?ip=192.168.100.41&key=0").then((clear_responden)=>{
+        // });
+      }else{
+        console.log('Data Kosong');
+      }    
+    }else{
+      console.log('Data error');
+    }
+  }).catch((error)=>{
+    console.log(error);
+  });
+  // if(new Date().getHours()==12){
+  //   // axios.get("http://localhost/attend/PHP-soap-baru/clear-data.php?ip=192.168.100.41&key=0").then((clear_responden)=>{
       
-//     //     //res.send('Sukses');
-//     // });
-//   }
-// }, 5000)
+  //   //     //res.send('Sukses');
+  //   // });
+  // }
+}, 5000)
 
 router.get('/sync-data', (req, res, next)=>{
   axios.get('http://localhost/attend/PHP-soap-baru/tarik-data.php?ip=192.168.100.41&key=0').then((responder)=>{
@@ -322,8 +322,8 @@ MongoClient.connect(url, function(err, db){
         var param_jam = 450;
         if(result.status_pns!=='undefined' && result.bagian!=='undefined'){
           send_data['waktu'] = param_jam-(jam+menit);
-          send_data['nama'] = data_user.name;
-          send_data['jabatan'] = data_user.bagian;
+          send_data['name'] = data_user.name;
+          send_data['bagian'] = data_user.bagian;
           send_data['status_pns'] = data_user.status_pns;
           console.log("Data user", send_data);
           io.emit('absen', send_data);
@@ -335,7 +335,7 @@ MongoClient.connect(url, function(err, db){
 });
 
 router.get('/get-data', (req, res, next)=>{
-  
+  io.emit('coba', 's');
 })
 
 
@@ -416,7 +416,9 @@ router.get('/rekap-absen', (req, res, next)=>{
                 finished_process['pulang'].push({...item, ...pulang});
               }
             }else{
-              finished_process['belum_datang'].push(item);
+              if(item.name!==undefined){
+                finished_process['belum_datang'].push(item);
+              }
             } 
             
             console.log(data);
