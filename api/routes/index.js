@@ -185,7 +185,6 @@ router.get('/show-kedatangan', (req, res, next)=>{
         }
         if(i===result_kedatangan.length-1){
           res.send(result_kedatangan);
-
         }
       })
     })
