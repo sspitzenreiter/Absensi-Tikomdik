@@ -73,7 +73,7 @@ getKedatangan=(callback)=>{
     };
     var dbo = db.db("AbsenTikomdik");
     var tanggal_server = new Date();
-    var hari = tanggal_server.getDate()-1;
+    var hari = tanggal_server.getDate()-2;
     var bulan = tanggal_server.getMonth()+1;
     var tahun = tanggal_server.getFullYear();
     if(hari<10){
@@ -369,44 +369,66 @@ router.get('/rekap-absen', (req, res, next)=>{
       var data_pergi = [];
       var data_pulang = [];
       for(var a=0;a<result.length;a++){
-        var param_jam = 450;
+        var param_jam_pergi = 450;
+        var param_jam_pulang = 960;
         var data = result[a];
         var waktu = data.jam.split(':');
         var jam = parseInt(waktu[0])*60;
         var menit = parseInt(waktu[1]);
-        data['waktu'] = param_jam-(parseInt(jam)+parseInt(menit));
-        var get = data_pergi.find(x=>x.pin===data.pin);
-        if(get!=='undefined'){
+        data['waktu'] = param_jam_pergi-(parseInt(jam)+parseInt(menit));
+        var get = {...data_pergi.find(x=>x.pin===data.pin)};
+        console.log(get);
+        if(Object.keys(get)<1){
           data_pergi.push(data);
         }else{
+          data['waktu'] = (param_jam_pulang-(parseInt(jam)+parseInt(menit)))*-1;
           data_pulang.push(data);
         }
       }
+      //console.log("Data pulang",data_pergi)
       callback(null, {pergi:data_pergi, pulang:data_pulang});
     },(result, callback)=>{
       //console.log(Object.values(result.pergi.map(value=>value.pin)));
-      var finished_process = [];
+      var finished_process = {
+        belum_datang:[],
+        pergi:[],
+        pulang:[]
+      };
       async.waterfall([
         (callback)=>{
           // console.log({"userid":{"$in":Object.values(result.pergi.map(value=>value.pin))}, ...search_query});
-          getCollection('user', {"userid":{"$in":Object.values(result.pergi.map(value=>value.pin))}, ...search_query}, (result_data)=>{
+          getCollection('user',  {...search_query}, (result_data)=>{
             //res.send(result_data);
             
             callback(null, result_data);
           })
         },(result_sub, callback)=>{
           result_sub.forEach((item, i)=>{
+           delete item._id;
            //console.log(result);
-            var data = {...item, ...result.pergi.find(x=>x.pin===item.userid)};
+           var data = {};
+           var pergi = {...result.pergi.find(x=>x.pin===item.userid)};
+           var pulang = {...result.pulang.find(x=>x.pin===item.userid)};
+            if(Object.keys(pergi).length>0){
+              delete pergi._id;
+              finished_process['pergi'].push({...item,...pergi});
+              if(Object.keys(pulang).length>0){
+                delete pulang._id;
+                finished_process['pulang'].push({...item, ...pulang});
+              }
+            }else{
+              finished_process['belum_datang'].push(item);
+            } 
+            
             console.log(data);
-            finished_process.push(data);
+            //finished_process.push(data);
             if(i===result_sub.length-1){
               callback(null);
             }
             
           })
         },(callback)=>{
-          res.send({data_rekap:finished_process});
+          res.send({list_rekap_absen:finished_process});
         }
       ])
     }
