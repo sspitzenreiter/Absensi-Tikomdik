@@ -37,7 +37,7 @@ class GrafikAbsen extends React.Component{
                         horizontal: true,
                         barHeight: '80%',
                         formatter: (val, opt)=> {
-                        return val
+                            return val
                         }
                     }
                 },
@@ -58,7 +58,7 @@ class GrafikAbsen extends React.Component{
                     },
                     labels: {
                         formatter: function (val) {
-                        return Math.abs(Math.round(val))
+                        return Math.abs(Math.round(val))+" m"
                         }
                     }
                 },

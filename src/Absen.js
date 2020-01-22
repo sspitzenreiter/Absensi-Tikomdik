@@ -16,6 +16,7 @@ class Absen extends React.Component{
         }
         this.state = {
             belum_datang:[],
+            sudah_datang: [],
             tatausaha_pns_data:{
               warna:absen_color,
               parameter:{
@@ -89,15 +90,41 @@ class Absen extends React.Component{
               pegawai:['Tidak Ada']
             },
         }
+        const socket = io('http://192.168.100.95:4000', {
+          autoConnect:true
+        });
+        socket.on('connect', ()=>{
+          
+        });
+        
+        socket.on('coba', data=>{
+          alert(data);
+        })
+
+        socket.on('absen', data=>{
+          var index = this.state.belum_datang.indexOf(data.name);
+          if(index>-1){
+            this.state.belum_datang.splice(index, 1);
+          }
+          if(this.state.sudah_datang.indexOf(data.name)===-1){
+            this.insertDataToGraph(data);
+          }
+        });
     }
 
     componentDidMount(){
         
-        const socket = io('http://192.168.100.95:4000', {
-            autoConnect:true
-        });
+       
         axios.get('http://192.168.100.95:3500/rekap-absen').then((response)=>{
-          this.setState({belum_datang:response.data.list_rekap_absen.belum_datang.map(value=>value.name)});
+          var data_belum_datang = [];
+          var res_belum_datang = response.data.list_rekap_absen.belum_datang;
+          for(var i=0;i<res_belum_datang.length;i++){
+            if(res_belum_datang[i].bagian!=="1" && res_belum_datang[i].bagian!=="2" && res_belum_datang[i].bagian!=="3" && res_belum_datang[i].bagian!=="4" && res_belum_datang[i].bagian!=="8"){
+              data_belum_datang.push(res_belum_datang[i].name);
+            }
+          }
+          data_belum_datang.sort();
+          this.setState({belum_datang:data_belum_datang});
           response.data.list_rekap_absen.pergi.forEach((item, i)=>{
             this.insertDataToGraph(item);
             
@@ -105,23 +132,7 @@ class Absen extends React.Component{
         }).catch((err)=>{
           console.log(err);
         });
-        socket.on('connect', ()=>{
-          
-        });
         
-        socket.on('coba', data=>{
-          
-        })
-
-        socket.on('absen', data=>{
-          var index = this.state.belum_datang.indexOf(data.name);
-          if(index>-1){
-            this.state.belum_datang.splice(index, 1);
-            
-          }
-          
-          this.insertDataToGraph(data);
-        });
        
     }
     
@@ -143,6 +154,11 @@ class Absen extends React.Component{
       }else{
         target+="pns";
       }
+      this.setState(prevState=>{
+        return {
+          sudah_datang:[...prevState.sudah_datang, data.name]
+        }
+      })
       data['status_tampil'] = "standar";
       this.setGraphData(target, data);
     }
@@ -161,10 +177,11 @@ class Absen extends React.Component{
       }
       switch(graphname){
         case "produksi_pns":
-          if(this.state.produksi_pns_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
+          
+          if(this.state.produksi_pns_data.pegawai[0]==="Tidak Ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
-                promosi_pns_data:{
+                produksi_pns_data:{
                   ...prevState.produksi_pns_data,
                   waktu:{
                     telat:[data.telat],
@@ -190,7 +207,7 @@ class Absen extends React.Component{
           }
         break;
         case "produksi_non":
-          if(this.state.produksi_non_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
+          if(this.state.produksi_non_data.pegawai[0]==="Tidak Ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
                 produksi_non_data:{
@@ -219,10 +236,10 @@ class Absen extends React.Component{
           }
         break;
         case "promosi_pns":
-          if(this.state.promosi_pns_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
+          if(this.state.promosi_pns_data.pegawai[0]==="Tidak Ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
-                promosi_non_data:{
+                promosi_pns_data:{
                   ...prevState.promosi_pns_data,
                   waktu:{
                     telat:[data.telat],
@@ -235,7 +252,7 @@ class Absen extends React.Component{
           }else{
             this.setState(prevState=>{
               return {
-                promosi_non_data:{
+                promosi_pns_data:{
                   ...prevState.promosi_pns_data,
                   waktu:{
                     telat:[...prevState.promosi_pns_data.waktu.telat, data.telat],
@@ -248,7 +265,7 @@ class Absen extends React.Component{
           }
         break;
         case "promosi_non":
-          if(this.state.promosi_non_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
+          if(this.state.promosi_non_data.pegawai[0]==="Tidak Ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
                 promosi_non_data:{
@@ -277,7 +294,7 @@ class Absen extends React.Component{
           }
         break;
         case "tatausaha_pns":
-          if(this.state.tatausaha_pns_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
+          if(this.state.tatausaha_pns_data.pegawai[0]==="Tidak Ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
                 tatausaha_pns_data:{
@@ -306,7 +323,7 @@ class Absen extends React.Component{
           }
         break;
         case "tatausaha_non":
-          if(this.state.tatausaha_non_data.pegawai[0]==="Tidak ada" || data.status_tampil == "reset" ){
+          if(this.state.tatausaha_non_data.pegawai[0]==="Tidak Ada" || data.status_tampil == "reset" ){
             this.setState(prevState=>{
               return {
                 tatausaha_non_data:{

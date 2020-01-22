@@ -31,7 +31,7 @@ insertManyCollection=(doc, data, callback)=>{
       
       callback(err, result);
       //res.send('Sukses, telah memasukkan sebanyak');
-      //db.close();
+      db.close();
     });
   });
 }
@@ -42,6 +42,7 @@ insertOneCollection=(doc, data, callback)=>{
     var dbo = db.db("AbsenTikomdik");
     dbo.collection(doc).insertOne(data, (err, result)=>{
       callback(err, result);
+      db.close();
     });
   });
 }
@@ -109,6 +110,7 @@ getKedatangan=(callback)=>{
         throw err;
       } 
       //console.log("result trace",result);
+      console.log(result);
       callback(err, result);
       db.close();
     });
@@ -311,7 +313,8 @@ MongoClient.connect(url, function(err, db){
     var hari = tanggal_server.getDate();
     var bulan = tanggal_server.getMonth();
     var tahun = tanggal_server.getFullYear();
-    console.log("Hari"+hari+", Bulan"+bulan+", Tahun"+tahun);
+    console.log("Date","Hari"+hari+", Bulan"+bulan+", Tahun"+tahun);
+    console.log(tanggal_absen.getTimezoneOffset());
     if(hari==tanggal_absen.getDate() && bulan == tanggal_absen.getMonth() && tahun==tanggal_absen.getFullYear()){
       console.log("bisa");
       var jam = new Date(send_data.tanggal).getHours()*60;
@@ -321,6 +324,7 @@ MongoClient.connect(url, function(err, db){
         var data_user = result[0];
         var param_jam = 450;
         if(result.status_pns!=='undefined' && result.bagian!=='undefined'){
+          console.log("sending");
           send_data['waktu'] = param_jam-(jam+menit);
           send_data['name'] = data_user.name;
           send_data['bagian'] = data_user.bagian;
@@ -342,6 +346,27 @@ router.get('/get-data', (req, res, next)=>{
 router.get('/', function(req, res, next) {
   res.send('s');
 });
+
+router.get('/get-user', (req, res, next)=>{
+  getCollection('user', {}, (result)=>{
+    res.send(result);
+  })
+  
+})
+
+router.post('/update-user', (req, res, next)=>{
+  MongoClient.connect(url, function(err, db){
+    if(err){
+      console.log(err);
+      throw err;
+    };
+    var dbo = db.db("AbsenTikomdik");
+    
+    dbo.collection('user').update({userid:{"$eq":req.body.where}}, {"$set":{...req.body.data}}, (err, result)=>{
+
+    });
+  });
+})
 
 router.get('/rekap-absen', (req, res, next)=>{
   //res.send('Data Requested');
@@ -376,12 +401,14 @@ router.get('/rekap-absen', (req, res, next)=>{
         var menit = parseInt(waktu[1]);
         data['waktu'] = param_jam_pergi-(parseInt(jam)+parseInt(menit));
         var get = {...data_pergi.find(x=>x.pin===data.pin)};
-        console.log(get);
-        if(Object.keys(get)<1){
-          data_pergi.push(data);
-        }else{
-          data['waktu'] = (param_jam_pulang-(parseInt(jam)+parseInt(menit)))*-1;
-          data_pulang.push(data);
+        
+        if(jam>=270){
+          if(Object.keys(get)<1){
+            data_pergi.push(data);
+          }else{
+            data['waktu'] = (param_jam_pulang-(parseInt(jam)+parseInt(menit)))*-1;
+            data_pulang.push(data);
+          }
         }
       }
       //console.log("Data pulang",data_pergi)
@@ -396,7 +423,7 @@ router.get('/rekap-absen', (req, res, next)=>{
       async.waterfall([
         (callback)=>{
           // console.log({"userid":{"$in":Object.values(result.pergi.map(value=>value.pin))}, ...search_query});
-          getCollection('user',  {...search_query}, (result_data)=>{
+          getCollection('user',  {...search_query, "activated":"1"}, (result_data)=>{
             //res.send(result_data);
             
             callback(null, result_data);
