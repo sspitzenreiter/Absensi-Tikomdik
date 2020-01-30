@@ -323,14 +323,41 @@ MongoClient.connect(url, function(err, db){
         console.log("User",result);
         var data_user = result[0];
         var param_jam = 450;
-        if(result.status_pns!=='undefined' && result.bagian!=='undefined'){
-          console.log("sending");
-          send_data['waktu'] = param_jam-(jam+menit);
-          send_data['name'] = data_user.name;
-          send_data['bagian'] = data_user.bagian;
-          send_data['status_pns'] = data_user.status_pns;
-          console.log("Data user", send_data);
-          io.emit('absen', send_data);
+        if(typeof data_user.name!=='undefined'){
+          if(result.status_pns!=='undefined' && result.bagian!=='undefined'){
+            console.log("sending");
+            send_data['waktu'] = param_jam-(jam+menit);
+            send_data['name'] = data_user.name;
+            send_data['bagian'] = data_user.bagian;
+            send_data['status_pns'] = data_user.status_pns;
+            console.log("Data user", send_data);
+            io.emit('absen', send_data);
+          }
+        }else{
+          ZK.connect((err)=>{
+            if(err) throw err;
+        
+            ZK.getUser((err, result)=>{
+              if(err) throw err;
+              // res.send(JSON.stringify(t));
+              // console.log(t.toString());
+              // insertManyCollection('user', t);
+              result.forEach((item, i)=>{
+                getOneCollection('user', {"userid":item.userid}, (err, result)=>{
+                  if(result.length==0 && item.name!="Cucu Sumiati" && item.name!="Andri Eliyas"){
+                    console.log(JSON.stringify(item));
+                    insertOneCollection('user', item, (err, result)=>{
+                      console.log(item.name+" Inserted");
+                    })
+                  }
+                })
+              })
+              
+              //res.send(JSON.stringify(t));
+              ZK.disconnect();
+            })
+            res.send('data');
+          })
         }
       })
       
